@@ -1,0 +1,85 @@
+I. LICENSE
+
+MIT License
+
+Copyright (c) 2023 ArcSoundGuy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+II. PURPOSE
+
+Control volume for a group of Sonos speakers using a TV remote with HDMI CEC.
+
+III. DESCRIPTION
+
+The main script named sonos-volume.sh runs on a Linux server (RHEL8) and is called whenever 
+the Sonos state changes on the local network.  The script then queries the Arc speaker for 
+its volume and changes the volumes of group speakers to match.  Mute is supported.  This 
+method works very well but does require a Linux server of some kind (either physical or 
+virtual machine) to be running in your home.
+
+An alternative method is to use a Logitech Harmony remote.  I used the Logitech Harmony 
+method for two years.  The Logitech Harmony method works somewhat but has downsides.  The 
+group speakers volume can become out of sync (louder or quieter) with the Arc in some cases.  
+The group speakers can fall out of the group such as after updates or power loss.  The 
+Logitech Harmony often won’t respond to volume requests which is a problem others have 
+reported as well.  Non-IT people in a household find Logitech issues difficult to 
+troubleshoot.  Logitech Harmony is no longer available for sale.
+
+In my configuration, I use an AppleTV remote which changes the Arc sound using HDMI CEC.  
+I have an Arc in the Living Room with four additional Sonos One speakers.  I also have an 
+Arc in the Bed Room with two additional Sonos One speakers.  My goal is to have the Arc 
+sound coming from all speakers in each room respectively.  I do not want a surround channel.  
+Sonos speakers being networked is great and hopefully Sonos will add changing the group volume 
+with a TV remote as an option since customers paying many dollars desire this feature and 
+Sonos competitors may soon offer a solution to lure otherwise happy Sonos customers away.
+
+IV. VOLUME CHANGE PROCESS DIAGRAM
+
+Remote —> TV —> Arc Speaker —> Sonos API (webhook) —> Apache sonos.cgi —> sonos-volume.sh —> Group Speakers
+
+V. SOFTWARE PRE-REQUISITES
+
+The Linux server needs to have the following programs installed.
+
+1. jq - for json parsing
+2. curl
+3. lockfile - Comes with procmail package
+4. sed
+5. A web server (tested with Apache)
+6. Jishi Sonos API - https://github.com/jishi/node-sonos-http-api
+
+VI. INSTALLATION STEPS
+
+1. Install Sonos API https://github.com/jishi/node-sonos-http-api.  Add a webhook: 
+"http://localhost:/sonos.cgi" to your settings.js.  I have included the entire settings.js 
+file but you only need to add the webhook line to your existing settings.js file.  This API 
+uses the webhook setting to send an event to Apache whenever the Sonos state changes on the 
+local network.  The webhook setting calls sonos.cgi which then calls sonos-volume.sh.  This 
+API also allows volume levels to be queried and changed by the sonos-volume.sh script.  
+
+2. Install Apache and place sonos.cgi in your webroot and enable cgi (.cgi handler and 
+ExecCGI in httpd.conf).  You may need to disable SELinux.  Sonos.cgi calls sonos-volume.sh.
+
+3. Install sonos-volume.sh in /usr/local/bin.  Be sure to set executable permissions with 
+chmod a+x /usr/local/bin/sonos-volume.sh.  The script actually sets the volume for speakers 
+in the group.  For testing, you can run the sonos-volume.sh script from the Linux command line 
+before setting an API webhook and before installing Apache/sonos.cgi.  Be sure to change the 
+bottom of the script to set your speaker names.  Also, using the Sonos smartphone app is very 
+helpful to monitor group membership and speaker volumes as you test your deployment.
