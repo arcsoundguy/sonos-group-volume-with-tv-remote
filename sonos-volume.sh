@@ -27,6 +27,7 @@
 # Tue Jul 25 15:55:14 CDT 2023
 set -x
 
+# Prevent response lag during occasional webhook storms
 if ! lockfile -1 -r 120 -l 200 -s 0 /tmp/sonos-volume.lock
 then
         echo Could not acquire lock file, exiting... 2>&1
