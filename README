@@ -83,3 +83,7 @@ in the group.  For testing, you can run the sonos-volume.sh script from the Linu
 before setting an API webhook and before installing Apache/sonos.cgi.  Be sure to change the 
 bottom of the script to set your speaker names.  Also, using the Sonos smartphone app is very 
 helpful to monitor group membership and speaker volumes as you test your deployment.
+
+VII. RELATED WORK
+
+For a similar great project, see also https://github.com/ErikAlfredsson/sonos-sync-group-volume.
